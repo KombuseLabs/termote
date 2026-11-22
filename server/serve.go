@@ -52,6 +52,15 @@ type serveConfig struct {
 	// HcEnv is the core's session (HC_SESSION, HC_SOCKET): saved by start,
 	// else (no saved config) the environment's.
 	HcEnv hcEnv
+	// HcInContainer lets hc run although the server looks like it is in a
+	// container (/.dockerenv): a machine whose image came from a container
+	// but whose core is the user's own, such as a microVM
+	// (TERMOTE_HC_IN_CONTAINER, read only without a saved config).
+	HcInContainer bool
+	// NoUpdateCheck keeps the app from asking GitHub for releases: the
+	// policy no longer allows it and health says so (TERMOTE_NO_UPDATE_CHECK,
+	// read only without a saved config).
+	NoUpdateCheck bool
 	// AllowLocalAddr also accepts the address a request arrived on as its
 	// Host (LAN access; see hostAllowlist).
 	AllowLocalAddr bool
@@ -149,6 +158,8 @@ func newServeConfigFromEnv() serveConfig {
 		HerdrAllowNoAuth: os.Getenv("TERMOTE_HERDR_ALLOW_NO_AUTH") == "true",
 		HcAllowNoAuth:    os.Getenv("TERMOTE_HC_ALLOW_NO_AUTH") == "true",
 		HcEnv:            hcEnv{Session: os.Getenv("HC_SESSION"), Socket: os.Getenv("HC_SOCKET")},
+		HcInContainer:    os.Getenv("TERMOTE_HC_IN_CONTAINER") == "true",
+		NoUpdateCheck:    os.Getenv("TERMOTE_NO_UPDATE_CHECK") == "true",
 		Places:           parsePlacesEnv(os.Getenv("TERMOTE_PLACES")),
 		// Set by container up only with the port published on loopback:
 		// what reaches the container then comes from the host, so the
@@ -174,7 +185,7 @@ var termoteEnvKeys = []string{
 	"TERMOTE_PASS", "TERMOTE_USER", "TERMOTE_PORT", "TERMOTE_BIND", "TERMOTE_NO_AUTH",
 	"TERMOTE_PWA_DIR", "TERMOTE_ALLOWED_HOSTS", "TERMOTE_MUX", "TERMOTE_HERDR_ALLOW_NO_AUTH",
 	"TERMOTE_PROJECT_DIR", "TERMOTE_WORKSPACE_HOME", "TERMOTE_PLACES", "TERMOTE_PROXY_CLIENT_HEADER",
-	"TERMOTE_E2E_MACHINE_BRIDGE",
+	"TERMOTE_E2E_MACHINE_BRIDGE", "TERMOTE_HC_IN_CONTAINER", "TERMOTE_NO_UPDATE_CHECK",
 }
 
 // scrubTermoteEnv removes every TERMOTE_* variable from the process
@@ -467,7 +478,7 @@ func newMux(ctx context.Context, cfg serveConfig) (Mux, error) {
 	case "hc":
 		// herdr-core has no auth of its own: only this machine's user may
 		// reach it, never a container's server.
-		if runningInContainer() {
+		if runningInContainer() && !cfg.HcInContainer {
 			return nil, errors.New("TERMOTE_MUX=hc is not supported in a container; run termote start --mux hc natively")
 		}
 		bin := cfg.HcBin
@@ -758,6 +769,7 @@ func startServeMode(cfg serveConfig) {
 	if err := validateConfig(cfg); err != nil {
 		fatal(err)
 	}
+	serverUpdateCheck = !cfg.NoUpdateCheck
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	m, err := newMux(ctx, cfg)
@@ -779,11 +791,13 @@ func startServeMode(cfg serveConfig) {
 		reapOrphanTerminals(isZellijStreamCmdline)
 		warnZellijTermoteEnv()
 	}
-	ln, err := net.Listen("tcp", net.JoinHostPort(cfg.Bind, cfg.Port))
+	ln, err := listenServer(cfg.Bind, cfg.Port)
 	if err != nil {
 		fatal(err)
 	}
-	if cfg.CheckLocalUsers {
+	// A UNIX socket is the user's own by its mode; the peer check reads
+	// TCP addresses.
+	if cfg.CheckLocalUsers && !isUnixBind(cfg.Bind) {
 		if check := newLocalPeerCheck(cfg.AllowLocalUsers); check != nil {
 			ln = check.listener(ln)
 		} else {

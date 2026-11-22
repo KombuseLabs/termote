@@ -5,6 +5,7 @@ import {
   MUX_API_VERSION,
   RequestError,
 } from '../hooks/use-mux-api'
+import { setUpdateCheckAllowed } from '../hooks/use-update-check'
 import { APP_INFO } from './app-info'
 
 // Server apiVersion this tab already reloaded for, so a server that really
@@ -225,6 +226,7 @@ export async function checkServerVersion(
   } catch {
     return false
   }
+  setUpdateCheckAllowed(health.updateCheck !== false)
   if (health.version) {
     setState({
       server: { version: health.version, install: health.install ?? 'unknown' },

@@ -547,6 +547,9 @@ export interface Health {
   // The server binary's version (absent before 1.14)
   version?: string
   install?: InstallKind
+  // false: the server's owner turned the GitHub release check off
+  // (TERMOTE_NO_UPDATE_CHECK); absent from older servers, which allow it
+  updateCheck?: boolean
 }
 
 export async function fetchHealth(signIn = openSignIn): Promise<Health> {

@@ -6,6 +6,7 @@ import {
   newestStable,
   RETRY_GAP,
   resetUpdateCheck,
+  setUpdateCheckAllowed,
   useUpdateCheck,
 } from './use-update-check'
 
@@ -89,6 +90,17 @@ describe('useUpdateCheck', () => {
     })
     expect(result.current.failed).toBe(false)
     expect(JSON.parse(localStorage.getItem(CACHE_KEY)!).version).toBe('1.14.0')
+  })
+
+  it('never asks GitHub once the server forbids it, not even forced', async () => {
+    const kept = { version: '1.14.0', url: 'u', checkedAt: Date.now() }
+    localStorage.setItem(CACHE_KEY, JSON.stringify(kept))
+    const { result } = renderHook(() => useUpdateCheck())
+    act(() => setUpdateCheckAllowed(false))
+    expect(result.current.latest).toBe(null)
+    await act(() => result.current.check(true))
+    expect(fetch).not.toHaveBeenCalled()
+    expect(result.current.failed).toBe(false)
   })
 
   it('uses a result younger than an hour without asking GitHub', async () => {

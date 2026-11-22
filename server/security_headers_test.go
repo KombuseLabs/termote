@@ -217,3 +217,18 @@ func TestDemoPolicyMatchesServer(t *testing.T) {
 		t.Errorf("demo-csp.json sandbox =\n%q\nwant the server's\n%q", demo.Sandbox, want)
 	}
 }
+
+// With the update check off the policy names no GitHub, so the app cannot
+// ask it even before it reads health.
+func TestContentSecurityPolicyWithoutUpdateCheck(t *testing.T) {
+	defer func(was bool) { serverUpdateCheck = was }(serverUpdateCheck)
+	serverUpdateCheck = false
+	for _, host := range []string{"", "box.local:7680"} {
+		if got := contentSecurityPolicy(nil, host); strings.Contains(got, "github") {
+			t.Errorf("Host %q: %s", host, got)
+		}
+	}
+	if got := contentSecurityPolicy(nil, "box.local:7680"); !strings.Contains(got, "connect-src 'self' ws://box.local:7680 wss://box.local:7680;") {
+		t.Errorf("stream lost: %s", got)
+	}
+}

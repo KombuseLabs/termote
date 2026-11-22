@@ -23,6 +23,11 @@ const apiVersion = 2
 // health so the PWA can name the update command; serve sets it at start.
 var serverInstall = "unknown"
 
+// serverUpdateCheck is whether the app may ask GitHub for releases (not
+// TERMOTE_NO_UPDATE_CHECK), reported by health and kept by the page's
+// policy; serve sets it at start.
+var serverUpdateCheck = true
+
 // serverUpdateSteps is the command that updates this install in place, run
 // by the termote update task (updateSteps); nil when it cannot.
 var serverUpdateSteps [][]string
@@ -432,7 +437,8 @@ func registerMuxRoutes(mux *http.ServeMux, m Mux, tokens *tokenStore, uploads *u
 		// still holding the port (start, restart, update); the PWA compares
 		// version with its own build and names the update for install.
 		h := map[string]any{"status": status, "apiVersion": apiVersion, "backend": m.Name(),
-			"version": cliVersion, "pid": os.Getpid(), "install": serverInstall}
+			"version": cliVersion, "pid": os.Getpid(), "install": serverInstall,
+			"updateCheck": serverUpdateCheck}
 		// With sign-in on, whether pairing works: `container status` says
 		// so when the state volume is not usable.
 		if authenticated(r.Context()) {

@@ -109,6 +109,9 @@ interface UpdateCheckState {
 let state: UpdateCheckState | null = null
 let inflight: Promise<void> | null = null
 let failedAt = 0
+// The server's health may forbid asking GitHub (updateCheck: false); its
+// policy then blocks the request anyway, this keeps the app from trying.
+let allowed = true
 const listeners = new Set<() => void>()
 
 function snapshot(): UpdateCheckState {
@@ -131,6 +134,15 @@ export function resetUpdateCheck() {
   state = null
   inflight = null
   failedAt = 0
+  allowed = true
+}
+
+// Whether the server allows the release check (health's updateCheck). Not
+// allowed: no ask, and no release or failure is shown.
+export function setUpdateCheckAllowed(next: boolean) {
+  if (next === allowed) return
+  allowed = next
+  if (!allowed) setState({ latest: null, checking: false, failed: false })
 }
 
 async function fetchLatest() {
@@ -160,6 +172,7 @@ async function fetchLatest() {
 // Asks GitHub unless a result younger than an hour is kept, or the last ask
 // failed within RETRY_GAP (force: always). A check already running is shared.
 async function check(force = false): Promise<void> {
+  if (!allowed) return
   if (inflight) return inflight
   if (!force) {
     const cached = readCache()

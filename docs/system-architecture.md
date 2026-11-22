@@ -100,7 +100,9 @@ nothing it opens inherits one. Only without a saved config (the container image,
 | Variable                      | Default      | Description                                                                                                                                    |
 | ----------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | `TERMOTE_PORT`                | `7680`       | Server listen port                                                                                                                             |
-| `TERMOTE_BIND`                | `0.0.0.0`    | Server bind address                                                                                                                            |
+| `TERMOTE_BIND`                | `0.0.0.0`    | Server bind address, or `unix:/abs/path` for a UNIX socket (mode 0600, no port)                                                                |
+| `TERMOTE_HC_IN_CONTAINER`     | `false`      | `true`: allow `TERMOTE_MUX=hc` although `/.dockerenv` exists (a VM built from a container image)                                               |
+| `TERMOTE_NO_UPDATE_CHECK`     | `false`      | `true`: the app never asks GitHub for releases (health `updateCheck: false`, not in the CSP)                                                   |
 | `TERMOTE_PWA_DIR`             | `./pwa/dist` | Path to PWA static files                                                                                                                       |
 | `TERMOTE_USER`                | `admin`      | HTTP basic auth username                                                                                                                       |
 | `TERMOTE_PASS`                | (empty)      | HTTP basic auth password                                                                                                                       |

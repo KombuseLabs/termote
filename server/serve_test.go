@@ -1336,3 +1336,23 @@ func TestServeConfigProxyClientEnv(t *testing.T) {
 		t.Error("TERMOTE_PROXY_CLIENT_HEADER is not scrubbed from the environment")
 	}
 }
+
+// Without a saved config the environment turns the update check off and
+// lets hc run where the server only looks like a container.
+func TestServeConfigFromEnvHcInContainerAndNoUpdateCheck(t *testing.T) {
+	cfg := newServeConfigFromEnv()
+	if cfg.HcInContainer || cfg.NoUpdateCheck {
+		t.Fatalf("on without asking: %+v", cfg)
+	}
+	t.Setenv("TERMOTE_HC_IN_CONTAINER", "true")
+	t.Setenv("TERMOTE_NO_UPDATE_CHECK", "true")
+	cfg = newServeConfigFromEnv()
+	if !cfg.HcInContainer || !cfg.NoUpdateCheck {
+		t.Fatalf("not read: %+v", cfg)
+	}
+	for _, k := range []string{"TERMOTE_HC_IN_CONTAINER", "TERMOTE_NO_UPDATE_CHECK"} {
+		if !slices.Contains(termoteEnvKeys, k) {
+			t.Errorf("%s is not kept from tmux", k)
+		}
+	}
+}
