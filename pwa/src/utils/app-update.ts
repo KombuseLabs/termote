@@ -7,6 +7,7 @@ import {
 } from '../hooks/use-mux-api'
 import { setUpdateCheckAllowed } from '../hooks/use-update-check'
 import { APP_INFO } from './app-info'
+import { applyEmbedded } from './embedded'
 
 // Server apiVersion this tab already reloaded for, so a server that really
 // runs another version does not cause a reload loop.
@@ -227,6 +228,7 @@ export async function checkServerVersion(
     return false
   }
   setUpdateCheckAllowed(health.updateCheck !== false)
+  if (health.embedded) applyEmbedded()
   if (health.version) {
     setState({
       server: { version: health.version, install: health.install ?? 'unknown' },

@@ -1344,13 +1344,17 @@ func TestServeConfigFromEnvHcInContainerAndNoUpdateCheck(t *testing.T) {
 	if cfg.HcInContainer || cfg.NoUpdateCheck {
 		t.Fatalf("on without asking: %+v", cfg)
 	}
+	if cfg.Embedded {
+		t.Fatalf("embedded without asking: %+v", cfg)
+	}
 	t.Setenv("TERMOTE_HC_IN_CONTAINER", "true")
 	t.Setenv("TERMOTE_NO_UPDATE_CHECK", "true")
+	t.Setenv("TERMOTE_EMBEDDED", "true")
 	cfg = newServeConfigFromEnv()
-	if !cfg.HcInContainer || !cfg.NoUpdateCheck {
+	if !cfg.HcInContainer || !cfg.NoUpdateCheck || !cfg.Embedded {
 		t.Fatalf("not read: %+v", cfg)
 	}
-	for _, k := range []string{"TERMOTE_HC_IN_CONTAINER", "TERMOTE_NO_UPDATE_CHECK"} {
+	for _, k := range []string{"TERMOTE_HC_IN_CONTAINER", "TERMOTE_NO_UPDATE_CHECK", "TERMOTE_EMBEDDED"} {
 		if !slices.Contains(termoteEnvKeys, k) {
 			t.Errorf("%s is not kept from tmux", k)
 		}

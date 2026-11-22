@@ -28,6 +28,11 @@ var serverInstall = "unknown"
 // policy; serve sets it at start.
 var serverUpdateCheck = true
 
+// serverEmbedded is whether the app is shown in another program's window
+// (TERMOTE_EMBEDDED), reported by health so the app fits panes to it and
+// skips the welcome; serve sets it at start.
+var serverEmbedded = false
+
 // serverUpdateSteps is the command that updates this install in place, run
 // by the termote update task (updateSteps); nil when it cannot.
 var serverUpdateSteps [][]string
@@ -438,7 +443,7 @@ func registerMuxRoutes(mux *http.ServeMux, m Mux, tokens *tokenStore, uploads *u
 		// version with its own build and names the update for install.
 		h := map[string]any{"status": status, "apiVersion": apiVersion, "backend": m.Name(),
 			"version": cliVersion, "pid": os.Getpid(), "install": serverInstall,
-			"updateCheck": serverUpdateCheck}
+			"updateCheck": serverUpdateCheck, "embedded": serverEmbedded}
 		// With sign-in on, whether pairing works: `container status` says
 		// so when the state volume is not usable.
 		if authenticated(r.Context()) {

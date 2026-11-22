@@ -550,6 +550,8 @@ export interface Health {
   // false: the server's owner turned the GitHub release check off
   // (TERMOTE_NO_UPDATE_CHECK); absent from older servers, which allow it
   updateCheck?: boolean
+  // true: the app is shown in another program's window (TERMOTE_EMBEDDED)
+  embedded?: boolean
 }
 
 export async function fetchHealth(signIn = openSignIn): Promise<Health> {

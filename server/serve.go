@@ -61,6 +61,10 @@ type serveConfig struct {
 	// policy no longer allows it and health says so (TERMOTE_NO_UPDATE_CHECK,
 	// read only without a saved config).
 	NoUpdateCheck bool
+	// Embedded: the app is shown in another program's window for one
+	// person (kai's): it fits panes to that window and skips the welcome
+	// (health says so; TERMOTE_EMBEDDED, read only without a saved config).
+	Embedded bool
 	// AllowLocalAddr also accepts the address a request arrived on as its
 	// Host (LAN access; see hostAllowlist).
 	AllowLocalAddr bool
@@ -160,6 +164,7 @@ func newServeConfigFromEnv() serveConfig {
 		HcEnv:            hcEnv{Session: os.Getenv("HC_SESSION"), Socket: os.Getenv("HC_SOCKET")},
 		HcInContainer:    os.Getenv("TERMOTE_HC_IN_CONTAINER") == "true",
 		NoUpdateCheck:    os.Getenv("TERMOTE_NO_UPDATE_CHECK") == "true",
+		Embedded:         os.Getenv("TERMOTE_EMBEDDED") == "true",
 		Places:           parsePlacesEnv(os.Getenv("TERMOTE_PLACES")),
 		// Set by container up only with the port published on loopback:
 		// what reaches the container then comes from the host, so the
@@ -186,6 +191,7 @@ var termoteEnvKeys = []string{
 	"TERMOTE_PWA_DIR", "TERMOTE_ALLOWED_HOSTS", "TERMOTE_MUX", "TERMOTE_HERDR_ALLOW_NO_AUTH",
 	"TERMOTE_PROJECT_DIR", "TERMOTE_WORKSPACE_HOME", "TERMOTE_PLACES", "TERMOTE_PROXY_CLIENT_HEADER",
 	"TERMOTE_E2E_MACHINE_BRIDGE", "TERMOTE_HC_IN_CONTAINER", "TERMOTE_NO_UPDATE_CHECK",
+	"TERMOTE_EMBEDDED",
 }
 
 // scrubTermoteEnv removes every TERMOTE_* variable from the process
@@ -770,6 +776,7 @@ func startServeMode(cfg serveConfig) {
 		fatal(err)
 	}
 	serverUpdateCheck = !cfg.NoUpdateCheck
+	serverEmbedded = cfg.Embedded
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	m, err := newMux(ctx, cfg)
