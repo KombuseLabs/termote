@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.32.0](https://github.com/lamngockhuong/termote/compare/v2.31.0...v2.32.0) (2026-11-22)
+
+
+### Features
+
+* orchestrator that coordinates the agents in other panes ([#912](https://github.com/lamngockhuong/termote/issues/912)) ([3a3c73d](https://github.com/lamngockhuong/termote/commit/3a3c73d31453b724c29c2f6ccee370d178a0254b))
+* **pwa:** send one message to several agents from the overview ([#914](https://github.com/lamngockhuong/termote/issues/914)) ([3d176b3](https://github.com/lamngockhuong/termote/commit/3d176b3489b37d64d27114ee2b85c0e0ac5a0c2b))
+* **server:** hand an agent its first message as it starts ([#913](https://github.com/lamngockhuong/termote/issues/913)) ([a4b7a8f](https://github.com/lamngockhuong/termote/commit/a4b7a8f174d333ddbbe06d65659997e7e2df8362))
+* **server:** start an agent from the Chat view on tmux, Zellij and hc ([#911](https://github.com/lamngockhuong/termote/issues/911)) ([37f1c12](https://github.com/lamngockhuong/termote/commit/37f1c121ba4f9d3555c6c68c8d06ca7ffbfc4202))
+
+
+### Bug Fixes
+
+* **pwa:** keep the wifi icon whole while a stream opens ([#908](https://github.com/lamngockhuong/termote/issues/908)) ([6353783](https://github.com/lamngockhuong/termote/commit/63537837aacc7ca426daa8c783b091f41b7b8bbb))
+* **server:** let the binary the service runs answer machine whereami ([#910](https://github.com/lamngockhuong/termote/issues/910)) ([2b1c7f4](https://github.com/lamngockhuong/termote/commit/2b1c7f4992a59a666a1e83387d6702a7784dd580))
+* **server:** no C-c into a new tab when termote agents start starts an agent ([#915](https://github.com/lamngockhuong/termote/issues/915)) ([2e395ae](https://github.com/lamngockhuong/termote/commit/2e395aec7ecf28695347b402086cde9f0db1ce7b))
+
 ## [2.31.0](https://github.com/lamngockhuong/termote/compare/v2.30.0...v2.31.0) (2026-11-21)
 
 
